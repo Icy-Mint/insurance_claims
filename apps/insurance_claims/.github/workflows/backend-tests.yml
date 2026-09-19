@@ -1,0 +1,40 @@
+name: Backend tests
+
+on:
+  push:
+    paths:
+      - "insurance_claims/backend/**"
+      - "insurance_claims/fixtures/**"
+      - ".github/workflows/backend-tests.yml"
+  pull_request:
+    paths:
+      - "insurance_claims/backend/**"
+      - "insurance_claims/fixtures/**"
+      - ".github/workflows/backend-tests.yml"
+
+jobs:
+  pytest:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: insurance_claims/backend
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run test suite
+        # ANTHROPIC_API_KEY is optional: most of the suite (the deterministic
+        # state-machine checks) runs fully offline regardless. The handful of
+        # tests that need genuine live-model language understanding use the
+        # `real_llm` fixture, which skips itself (not fails) when no key is
+        # configured — set the ANTHROPIC_API_KEY repo secret to also run those
+        # in CI; leave it unset and the run still passes without them.
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: pytest -v

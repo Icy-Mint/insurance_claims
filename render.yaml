@@ -1,0 +1,25 @@
+services:
+  - type: web
+    name: insurance-claims-backend
+    runtime: docker
+    plan: free
+    rootDir: apps/insurance_claims
+    dockerfilePath: backend/Dockerfile
+    dockerContext: .
+    healthCheckPath: /health
+    envVars:
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: ANTHROPIC_MODEL
+        value: claude-sonnet-5
+
+  - type: web
+    name: insurance-claims-frontend
+    runtime: docker
+    plan: free
+    rootDir: apps/insurance_claims/frontend
+    dockerfilePath: Dockerfile
+    dockerContext: .
+    envVars:
+      - key: NEXT_PUBLIC_API_BASE
+        sync: false
