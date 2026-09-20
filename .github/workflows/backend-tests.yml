@@ -3,13 +3,13 @@ name: Backend tests
 on:
   push:
     paths:
-      - "insurance_claims/backend/**"
-      - "insurance_claims/fixtures/**"
+      - "apps/insurance_claims/backend/**"
+      - "apps/insurance_claims/fixtures/**"
       - ".github/workflows/backend-tests.yml"
   pull_request:
     paths:
-      - "insurance_claims/backend/**"
-      - "insurance_claims/fixtures/**"
+      - "apps/insurance_claims/backend/**"
+      - "apps/insurance_claims/fixtures/**"
       - ".github/workflows/backend-tests.yml"
 
 jobs:
@@ -17,7 +17,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: insurance_claims/backend
+        working-directory: apps/insurance_claims/backend
     steps:
       - uses: actions/checkout@v4
 

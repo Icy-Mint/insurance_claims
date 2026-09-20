@@ -34,7 +34,11 @@ INSURANCE_KEYWORDS = [
     "premium", "benefits", "id", "identity",
 ]
 
-AFFIRM_WORDS = {"yes", "yeah", "yep", "sure", "please do", "go ahead", "send it", "ok send", "affirmative", "correct"}
+AFFIRM_WORDS = {
+    "yes", "yeah", "yep", "sure", "please do", "go ahead", "send it", "ok send",
+    "affirmative", "correct", "ok", "okay", "alright", "all right", "sounds good",
+    "got it", "gotcha", "fine",
+}
 NEGATE_WORDS = {"no", "nope", "don't", "do not", "skip", "not now", "no thanks", "negative"}
 
 ANGRY_WORDS = ["ridiculous", "unacceptable", "furious", "angry", "absurd", "outrageous", "sick of"]

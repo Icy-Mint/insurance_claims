@@ -517,6 +517,19 @@ def generate_reply(
         # deterministic reply that always states the mismatch outright.
         return fallback()
 
+    if phase == Phase.VERIFY_ID and "?" not in text:
+        # generate_reply for VERIFY_ID is only ever called when state.verified
+        # is guaranteed False (the deterministic cascade already advanced past
+        # this phase if verification actually completed) — so the ONE thing
+        # every reply in this phase must do is ask the caller for something
+        # (another field, a retry, an alternative). A reply with no question
+        # at all is a stall (observed live: "Let me just make sure I have
+        # everything I need to move forward — give me just a moment", which
+        # neither confirmed nor denied progress and left the caller with
+        # nothing to answer). Never trust silence about what's needed next;
+        # use the deterministic reply, which always asks explicitly.
+        return fallback()
+
     if phase == Phase.VERIFY_ID and no_identity_match and not _contains_any(text, NO_MATCH_CONFIRMATION_MARKERS):
         # The submitted identity matched NO record at all (a total
         # non-match, e.g. a fabricated identity) — the model must state

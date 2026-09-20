@@ -77,7 +77,7 @@ data isn't there yet.
 ## Repo layout
 
 ```
-insurance_claims/
+apps/insurance_claims/
   fixtures/            # not modified — claims.json, policyholders.json, etc.
   backend/
     app/                # FastAPI app + state machine
@@ -112,7 +112,7 @@ of `pytest`.
 Backend:
 
 ```bash
-cd insurance_claims/backend
+cd apps/insurance_claims/backend
 python -m venv .venv
 source .venv/Scripts/activate   # Windows Git Bash; use .venv/bin/activate on macOS/Linux
 pip install -r requirements.txt
@@ -123,7 +123,7 @@ uvicorn app.main:app --reload --port 8000
 Frontend (separate terminal):
 
 ```bash
-cd insurance_claims/frontend
+cd apps/insurance_claims/frontend
 npm install
 cp .env.local.example .env.local   # NEXT_PUBLIC_API_BASE=http://localhost:8000
 npm run dev
@@ -134,14 +134,14 @@ Open http://localhost:3000 (redirects to `/chat`).
 ### Run via Docker
 
 ```bash
-cd insurance_claims
+cd apps/insurance_claims
 ANTHROPIC_API_KEY=sk-ant-... docker compose up --build
 ```
 
 or individually:
 
 ```bash
-# from insurance_claims/ so both backend/ and fixtures/ are in the build context
+# from apps/insurance_claims/ so both backend/ and fixtures/ are in the build context
 docker build -f backend/Dockerfile -t insurance-claims-backend .
 docker run -p 8000:8000 -e ANTHROPIC_API_KEY=sk-ant-... insurance-claims-backend
 
@@ -160,7 +160,7 @@ build arg, not a run-time `-e` flag.)
 ## Running the tests
 
 ```bash
-cd insurance_claims/backend
+cd apps/insurance_claims/backend
 source .venv/Scripts/activate
 pytest -v
 ```
@@ -216,8 +216,8 @@ configured, and automatically exercises the real model wherever one is available
 ## Continuous integration
 
 `.github/workflows/backend-tests.yml` runs the full backend suite on every push
-and pull request that touches `insurance_claims/backend/**` or
-`insurance_claims/fixtures/**`. Set the `ANTHROPIC_API_KEY` repository secret to
+and pull request that touches `apps/insurance_claims/backend/**` or
+`apps/insurance_claims/fixtures/**`. Set the `ANTHROPIC_API_KEY` repository secret to
 also run the `real_llm`-backed tests in CI; leave it unset and the workflow still
 passes, with those three tests skipped.
 
