@@ -14,25 +14,6 @@ type ChatResponse = {
   phase: string;
   ui_hints: { quick_replies?: string[] };
   state: Record<string, unknown>;
-  debug_state?: DebugState;
-};
-
-// Mirrors SessionState.as_debug_dict() on the backend exactly — this panel
-// only ever renders what that call returns, never front-end guesswork.
-type DebugState = {
-  phase: string;
-  verified: boolean;
-  verified_fields: string[];
-  verified_summary: string;
-  party_id: string | null;
-  memory: Record<string, unknown>;
-  escalated: boolean;
-  escalation_offered: boolean;
-  off_topic_count: number;
-  verification_friction_count: number;
-  email_sent: boolean;
-  session_closed: boolean;
-  last_tool_call: string | null;
 };
 
 const PHASE_LABELS: Record<string, string> = {
@@ -62,7 +43,6 @@ export default function ChatPage() {
   const [phase, setPhase] = useState("VERIFY_ID");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [debugState, setDebugState] = useState<DebugState | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -94,7 +74,6 @@ export default function ChatPage() {
       setMessages((m) => [...m, { role: "assistant", text: data.reply }]);
       setQuickReplies(data.ui_hints?.quick_replies || []);
       setPhase(data.phase);
-      setDebugState(data.debug_state ?? null);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong. Is the backend running?");
     } finally {
@@ -104,7 +83,6 @@ export default function ChatPage() {
 
   return (
     <main style={styles.page}>
-      <div style={styles.layout}>
       <div style={styles.card}>
         <header style={styles.header}>
           <div>
@@ -164,109 +142,7 @@ export default function ChatPage() {
           </button>
         </form>
       </div>
-
-      <DebugPanel debugState={debugState} />
-      </div>
     </main>
-  );
-}
-
-const PHASE_ORDER = ["VERIFY_ID", "RESOLVE_INTENT", "PROCESS_CASE", "POST_PROCESS"];
-
-function DebugPanel({ debugState }: { debugState: DebugState | null }) {
-  return (
-    <aside style={styles.debugPanel}>
-      <h2 style={styles.debugTitle}>Session debug state</h2>
-      {!debugState ? (
-        <p style={styles.debugEmpty}>Send a message to see live backend state here.</p>
-      ) : (
-        <div style={styles.debugSections}>
-          <section style={styles.debugSection}>
-            <div style={styles.debugLabel}>Phase</div>
-            <div style={styles.debugPhaseRow}>
-              {PHASE_ORDER.map((p) => (
-                <span
-                  key={p}
-                  style={{
-                    ...styles.debugPhaseChip,
-                    ...(p === debugState.phase ? styles.debugPhaseChipActive : {}),
-                  }}
-                >
-                  {p}
-                </span>
-              ))}
-            </div>
-          </section>
-
-          <section style={styles.debugSection}>
-            <div style={styles.debugLabel}>Verification</div>
-            <div style={styles.debugRow}>
-              <span>verified</span>
-              <span style={debugState.verified ? styles.debugTrue : styles.debugFalse}>
-                {String(debugState.verified)}
-              </span>
-            </div>
-            <div style={styles.debugRow}>
-              <span>matched fields</span>
-              <span style={styles.debugMono}>{debugState.verified_summary}</span>
-            </div>
-            <div style={styles.debugRow}>
-              <span>party_id</span>
-              <span style={styles.debugMono}>{debugState.party_id ?? "—"}</span>
-            </div>
-          </section>
-
-          <section style={styles.debugSection}>
-            <div style={styles.debugLabel}>Memory</div>
-            {Object.keys(debugState.memory).length === 0 ? (
-              <div style={styles.debugMuted}>empty</div>
-            ) : (
-              Object.entries(debugState.memory).map(([k, v]) => (
-                <div style={styles.debugRow} key={k}>
-                  <span>{k}</span>
-                  <span style={styles.debugMono}>{String(v)}</span>
-                </div>
-              ))
-            )}
-          </section>
-
-          <section style={styles.debugSection}>
-            <div style={styles.debugLabel}>Escalation &amp; friction</div>
-            <div style={styles.debugRow}>
-              <span>escalated</span>
-              <span style={debugState.escalated ? styles.debugTrue : styles.debugFalse}>
-                {String(debugState.escalated)}
-              </span>
-            </div>
-            <div style={styles.debugRow}>
-              <span>off_topic_count</span>
-              <span style={styles.debugMono}>{debugState.off_topic_count}</span>
-            </div>
-            <div style={styles.debugRow}>
-              <span>verification_friction_count</span>
-              <span style={styles.debugMono}>{debugState.verification_friction_count}</span>
-            </div>
-            <div style={styles.debugRow}>
-              <span>email_sent</span>
-              <span style={debugState.email_sent ? styles.debugTrue : styles.debugFalse}>
-                {String(debugState.email_sent)}
-              </span>
-            </div>
-            <div style={styles.debugRow}>
-              <span>session_closed</span>
-              <span style={debugState.session_closed ? styles.debugTrue : styles.debugFalse}>
-                {String(debugState.session_closed)}
-              </span>
-            </div>
-          </section>
-
-          <section style={styles.debugSection}>
-            <div style={styles.debugLabel}>Last tool call</div>
-            <div style={styles.debugToolCall}>{debugState.last_tool_call ?? "none yet"}</div>
-          </section>
-        </div>
-      )}
-    </aside>
   );
 }
 
@@ -275,22 +151,12 @@ const styles: Record<string, React.CSSProperties> = {
     minHeight: "100vh",
     display: "flex",
     justifyContent: "center",
-    alignItems: "flex-start",
-    padding: "40px 16px",
-  },
-  layout: {
-    width: "100%",
-    maxWidth: 1040,
-    display: "flex",
-    alignItems: "flex-start",
-    justifyContent: "center",
-    gap: 16,
-    flexWrap: "wrap",
+    alignItems: "center",
+    padding: 16,
   },
   card: {
     width: "100%",
     maxWidth: 640,
-    flex: "1 1 480px",
     height: "85vh",
     background: "#fff",
     borderRadius: 12,
@@ -298,96 +164,6 @@ const styles: Record<string, React.CSSProperties> = {
     display: "flex",
     flexDirection: "column",
     overflow: "hidden",
-  },
-  debugPanel: {
-    flex: "1 1 300px",
-    maxWidth: 640,
-    height: "auto",
-    minHeight: 220,
-    maxHeight: "85vh",
-    background: "#0f172a",
-    color: "#e2e8f0",
-    borderRadius: 12,
-    boxShadow: "0 4px 24px rgba(0,0,0,0.08)",
-    padding: 16,
-    overflowY: "auto",
-    fontFamily: "ui-monospace, SFMono-Regular, Menlo, Consolas, monospace",
-    fontSize: 12,
-  },
-  debugTitle: {
-    fontSize: 13,
-    fontFamily: "system-ui, sans-serif",
-    fontWeight: 600,
-    margin: "0 0 12px",
-    color: "#f8fafc",
-  },
-  debugEmpty: {
-    color: "#94a3b8",
-    fontFamily: "system-ui, sans-serif",
-    fontSize: 12,
-  },
-  debugSections: {
-    display: "flex",
-    flexDirection: "column",
-    gap: 14,
-  },
-  debugSection: {
-    borderTop: "1px solid #1e293b",
-    paddingTop: 8,
-  },
-  debugLabel: {
-    fontFamily: "system-ui, sans-serif",
-    fontSize: 11,
-    fontWeight: 600,
-    textTransform: "uppercase",
-    letterSpacing: 0.5,
-    color: "#64748b",
-    marginBottom: 6,
-  },
-  debugRow: {
-    display: "flex",
-    justifyContent: "space-between",
-    gap: 8,
-    padding: "2px 0",
-  },
-  debugMono: {
-    color: "#7dd3fc",
-    textAlign: "right",
-  },
-  debugMuted: {
-    color: "#64748b",
-    fontStyle: "italic",
-  },
-  debugTrue: {
-    color: "#4ade80",
-    fontWeight: 600,
-  },
-  debugFalse: {
-    color: "#f87171",
-    fontWeight: 600,
-  },
-  debugPhaseRow: {
-    display: "flex",
-    flexDirection: "column",
-    gap: 4,
-  },
-  debugPhaseChip: {
-    padding: "4px 8px",
-    borderRadius: 6,
-    background: "#1e293b",
-    color: "#64748b",
-  },
-  debugPhaseChipActive: {
-    background: "#2563eb",
-    color: "#fff",
-    fontWeight: 600,
-  },
-  debugToolCall: {
-    background: "#1e293b",
-    padding: "6px 8px",
-    borderRadius: 6,
-    color: "#fbbf24",
-    wordBreak: "break-word",
   },
   header: {
     padding: "16px 20px",
